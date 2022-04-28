@@ -4,6 +4,7 @@ GNU SPOT
 Group 3
 """
 import sys
+
 class GameTranslator:
     def __init__(self, tree, game):
         self.game = game
@@ -25,10 +26,11 @@ class GameTranslator:
         self.game.begin()
 
     def walkTree(self, node):
-        if isinstance(node, (int, str, list)):
-            return node
-        
         if node is None:
+            return None
+
+        if node == 'START':
+            self.startGame()
             return None
         
         if node[0] == 'command':
@@ -44,8 +46,4 @@ class GameTranslator:
 
         if node[0] == 'nextq':
             self.nextq(node[1])
-            return None
-        
-        if node[0] == 'START':
-            self.startGame()
             return None
