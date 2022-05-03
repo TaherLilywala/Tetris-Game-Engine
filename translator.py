@@ -17,9 +17,11 @@ class GameTranslator:
         self.game.setSensitivty(sens) 
 
     def nextq(self, check):
-        if check == 'ON':
-            self.game.setDisplayPiece(True)	
+        if check[1] == 'ON':
+            print("nextq is ",check)
+            self.game.setDisplayPiece(True) 
         else:
+            print("nextq is ",check)
             self.game.setDisplayPiece(False)
         
     def startGame(self):
@@ -41,7 +43,7 @@ class GameTranslator:
             return None   
 
         if node[0] == 'sensitivity':
-            self.sensitivity(node[1]) 	
+            self.sensitivity(node[1])   
             return None
 
         if node[0] == 'nextq':
