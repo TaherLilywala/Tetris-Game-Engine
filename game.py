@@ -1,3 +1,5 @@
+from glob import glob
+from pickle import GLOBAL
 import pygame
 import random
 import math
@@ -8,10 +10,6 @@ pygame.font.init()
 
 DISPLAY_WIDTH = 800
 DISPLAY_HEIGHT = 600
-
-# gameDisplay = pygame.display.set_mode((DISPLAY_WIDTH,DISPLAY_HEIGHT))
-# pygame.display.set_caption('Tetris')
-# clock = pygame.time.Clock()
 
 pieceNames = ('I', 'O', 'T', 'S', 'Z', 'J', 'L')
 
@@ -146,12 +144,11 @@ class GameClock:
 		self.frameTick = self.frameTick + 1
 
 key = GameKeyInput()		
-gameClock = GameClock()
 
 # Class for all the game mechanics, visuals and events
 class MainBoard:
 
-	def __init__(self,blockSize,xPos,yPos,colNum,rowNum,boardLineWidth,blockLineWidth,scoreBoardWidth):
+	def __init__(self,blockSize,xPos,yPos,colNum,rowNum,boardLineWidth,blockLineWidth,scoreBoardWidth,gameClock):
 		
 		#Size and position initiations
 		self.blockSize = blockSize
@@ -162,11 +159,12 @@ class MainBoard:
 		self.boardLineWidth = boardLineWidth
 		self.blockLineWidth = blockLineWidth
 		self.scoreBoardWidth = scoreBoardWidth
+		self.gameClock = gameClock
 		
 		#Matrix that contains all the existing blocks in the game board, except the moving piece
 		self.blockMat = [['empty'] * colNum for i in range(rowNum)]
 		
-		self.piece = MovingPiece(colNum,rowNum,'uncreated')
+		self.piece = MovingPiece(colNum,rowNum,'uncreated',self.gameClock)
 		
 		self.lineClearStatus = 'idle' # 'clearRunning' 'clearFin'
 		self.clearedLines = [-1,-1,-1,-1]
@@ -182,11 +180,11 @@ class MainBoard:
 	def restart(self):
 		self.blockMat = [['empty'] * self.colNum for i in range(self.rowNum)]
 		
-		self.piece = MovingPiece(self.colNum,self.rowNum,'uncreated')
+		self.piece = MovingPiece(self.colNum,self.rowNum,'uncreated',self.gameClock)
 		
 		self.lineClearStatus = 'idle'
 		self.clearedLines = [-1,-1,-1,-1]		
-		gameClock.fall.preFrame = gameClock.frameTick
+		self.gameClock.fall.preFrame = self.gameClock.frameTick
 		self.generateNextTwoPieces()
 		self.gameStatus = 'running'
 		self.gamePause = False
@@ -195,7 +193,7 @@ class MainBoard:
 		self.level = STARTING_LEVEL
 		self.lines = 0
 		
-		gameClock.restart()
+		self.gameClock.restart()
 		
 	def erase_BLOCK(self,gameDisplay,xRef,yRef,row,col):
 		pygame.draw.rect(gameDisplay, BLACK, [xRef+(col*self.blockSize),yRef+(row*self.blockSize),self.blockSize,self.blockSize],0)
@@ -336,14 +334,14 @@ class MainBoard:
 		
 	def whiteSineAnimation(self):
 		
-		sine = math.floor(255 * math.fabs(math.sin(2*math.pi*(gameClock.frameTick/(SINE_ANI_PERIOD*2)))))
-		#sine = 127 + math.floor(127 * math.sin(2*math.pi*(gameClock.frameTick/SINE_ANI_PERIOD)))
+		sine = math.floor(255 * math.fabs(math.sin(2*math.pi*(self.gameClock.frameTick/(SINE_ANI_PERIOD*2)))))
+		#sine = 127 + math.floor(127 * math.sin(2*math.pi*(self.gameClock.frameTick/SINE_ANI_PERIOD)))
 		sineEffect = [sine,sine,sine]
 		return sineEffect
 	
 	def lineClearAnimation(self):
 	
-		clearAniStage = math.floor((gameClock.frameTick - gameClock.clearAniStart)/CLEAR_ANI_PERIOD)
+		clearAniStage = math.floor((self.gameClock.frameTick - self.gameClock.clearAniStart)/CLEAR_ANI_PERIOD)
 		halfCol = math.floor(self.colNum/2)
 		if clearAniStage < halfCol:
 			for i in range(0,4):
@@ -381,7 +379,7 @@ class MainBoard:
 					rowIndex = rowIndex - 1
 
 		if cLIndex >= 0:
-			gameClock.clearAniStart = gameClock.frameTick
+			self.gameClock.clearAniStart = self.gameClock.frameTick
 			self.lineClearStatus = 'clearRunning'
 		else:
 			self.prepareNextSpawn()
@@ -428,12 +426,12 @@ class MainBoard:
 	def updateSpeed(self):
 	
 		if self.level < 29:
-			gameClock.fall.framePeriod = levelSpeeds[self.level]
+			self.gameClock.fall.framePeriod = levelSpeeds[self.level]
 		else:
-			gameClock.fall.framePeriod = 1
+			self.gameClock.fall.framePeriod = 1
 			
-		if gameClock.fall.framePeriod < 4:
-			gameClock.fall.framePeriod = gameClock.move.framePeriod
+		if self.gameClock.fall.framePeriod < 4:
+			self.gameClock.fall.framePeriod = self.gameClock.move.framePeriod
 	
 	# All the game events and mechanics are placed in this function, called at each game loop iteration
 	def gameAction(self):
@@ -454,7 +452,7 @@ class MainBoard:
 				self.checkAndApplyGameOver()
 				
 				if key.pause.trig == True:
-					gameClock.pause()
+					self.gameClock.pause()
 					self.gamePause = True
 					key.pause.trig = False
 				
@@ -483,7 +481,7 @@ class MainBoard:
 			
 			else: # self.gamePause = False
 				if key.pause.trig == True:
-					gameClock.unpause()
+					self.gameClock.unpause()
 					self.gamePause = False
 					key.pause.trig = False
 		
@@ -494,10 +492,11 @@ class MainBoard:
 # Class for all the definitions of current moving piece
 class MovingPiece:
 
-	def __init__(self,colNum,rowNum,status):
+	def __init__(self,colNum,rowNum,status,gameClock):
 
 		self.colNum = colNum
 		self.rowNum = rowNum
+		self.gameClock = gameClock
 
 		self.blockMat = [['empty'] * colNum for i in range(rowNum)]
 		
@@ -521,14 +520,14 @@ class MovingPiece:
 	
 	def applyFastMove(self):
 		
-		if gameClock.move.check(gameClock.frameTick) == True:
+		if self.gameClock.move.check(self.gameClock.frameTick) == True:
 			if self.lastMoveType == 'downRight' or self.lastMoveType == 'downLeft' or self.lastMoveType == 'down':
 				self.dropScore = self.dropScore + 1
 			self.applyNextMove()
 			
 	def slowMoveAction(self):
 	
-		if gameClock.fall.check(gameClock.frameTick) == True:
+		if self.gameClock.fall.check(self.gameClock.frameTick) == True:
 			if self.movCollisionCheck('down') == True:
 				self.createNextMove('noMove')
 				self.status = 'collided'
@@ -722,9 +721,8 @@ class MovingBlock:
 			self.col = col	
 		
 class Game:
-		
 	# Main game loop		
-	def gameLoop(self, gameDisplay, clock):		
+	def gameLoop(self, gameDisplay, clock, gameClock):		
 		
 		blockSize = 20 
 		boardColNum = 10 
@@ -735,7 +733,7 @@ class Game:
 		boardPosX = DISPLAY_WIDTH*0.3
 		boardPosY = DISPLAY_HEIGHT*0.15
 
-		mainBoard = MainBoard(blockSize,boardPosX,boardPosY,boardColNum,boardRowNum,boardLineWidth,blockLineWidth,scoreBoardWidth)	
+		mainBoard = MainBoard(blockSize,boardPosX,boardPosY,boardColNum,boardRowNum,boardLineWidth,blockLineWidth,scoreBoardWidth,gameClock)
 		
 		xChange = 0
 		
@@ -808,16 +806,19 @@ class Game:
 			clock.tick(60) #Pygame clock tick function(60 fps)
 	
 	def setSpeed(self, speed):
+		global STARTING_LEVEL
 		STARTING_LEVEL = speed
-		print(f'Game > Speed set to {STARTING_LEVEL}')
+		print(f'Game --> Speed set to {STARTING_LEVEL}')
 
 	def setSensitivty(self, sens):
+		global MOVE_PERIOD_INIT
 		MOVE_PERIOD_INIT = sens
-		print(f'Game > Sensitivity set to {MOVE_PERIOD_INIT}')
+		print(f'Game --> Sensitivity set to {MOVE_PERIOD_INIT}')
 
 	def setDisplayPiece(self, check):
+		global DISPLAY_NEXT_PIECE
 		DISPLAY_NEXT_PIECE = check
-		print(f'Game > NEXTQ set to {DISPLAY_NEXT_PIECE}')
+		print(f'Game --> NEXTQ set to {DISPLAY_NEXT_PIECE}')
 
 	# Main program
 	def begin(self):
@@ -825,7 +826,8 @@ class Game:
 		gameDisplay = pygame.display.set_mode((DISPLAY_WIDTH,DISPLAY_HEIGHT))
 		pygame.display.set_caption('Tetris')
 		clock = pygame.time.Clock()
-		self.gameLoop(gameDisplay, clock)	
+		gameClock = GameClock()
+		self.gameLoop(gameDisplay, clock, gameClock)	
 		pygame.quit()
 		sys.exit()
 
