@@ -11,7 +11,7 @@ class GameLexer(Lexer):
     """
     tokens = {START, MOVE, LEFT, RIGHT, ROTATE, CL, ACL, PAUSE, RESTART, DROP,
                 BLOCK, EASY, MED, HARD, SPEED, MODE, CB, CC, NEXTQ, ON, OFF,
-                SENSITIVITY, NUMBER}
+                SENSITIVITY, NUMBER, SCOREALGO, CUSTOM}
 
     # Ignore Spaces
     ignore = ' \t'
@@ -38,6 +38,8 @@ class GameLexer(Lexer):
     ON = r'ON'
     OFF = r'OFF'
     SENSITIVITY = r'SENSITIVITY'
+    SCOREALGO = r'SCOREALGO'
+    CUSTOM = r'CUSTOM'
 
     @_(r'\d+')
     def NUMBER(self, t):

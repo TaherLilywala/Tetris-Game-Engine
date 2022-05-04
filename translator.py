@@ -21,6 +21,12 @@ class GameTranslator:
             self.game.setDisplayPiece(True) 
         else:
             self.game.setDisplayPiece(False)
+
+    def customScoreAlgo(self, check):
+        if check[1] == 'CUSTOM':
+            self.game.useCustomScoreAlgo(True) 
+        else:
+            self.game.useCustomScoreAlgo(False)
         
     def startGame(self):
         self.game.begin()
@@ -46,4 +52,8 @@ class GameTranslator:
 
         if node[0] == 'nextq':
             self.nextq(node[1])
+            return None
+        
+        if node[0] == 'customScoreAlgo':
+            self.customScoreAlgo(node[1])
             return None

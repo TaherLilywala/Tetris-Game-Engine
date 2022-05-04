@@ -52,6 +52,10 @@ class GameParser(Parser):
     def command(self, p):
         return ('command', p.nextq)
 
+    @_('customScoreAlgo')
+    def command(self, p):
+        return ('command', p.customScoreAlgo)
+
     @_('START')
     def command(self, p):
         return ('command', p.START)
@@ -101,9 +105,13 @@ class GameParser(Parser):
     def droplr(self, p):
         return ('droplr', p.move_param)
 
-    @_('NEXTQ nextq_param')
+    @_('NEXTQ toggle_param')
     def nextq(self, p):
-        return ('nextq', p.nextq_param)
+        return ('nextq', p.toggle_param)
+    
+    @_('SCOREALGO custom')
+    def customScoreAlgo(self, p):
+        return ('customScoreAlgo', p.custom)
 
     """ Parameters """
     @_('LEFT', 'RIGHT')
@@ -123,8 +131,12 @@ class GameParser(Parser):
         return ('mode_param', p[0])
 
     @_('ON', 'OFF')
-    def nextq_param(self, p):
-        return ('nextq_param', p[0])
+    def toggle_param(self, p):
+        return ('toggle_param', p[0])
+
+    @_('CUSTOM')
+    def custom(self, p):
+        return ('custom', p[0])
 
 if __name__ == '__main__':
     lexer = GameLexer()

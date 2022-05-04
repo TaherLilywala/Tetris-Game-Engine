@@ -1,3 +1,9 @@
+"""
+Made by:
+GNU SPOT
+Group 3
+"""
+
 from glob import glob
 from pickle import GLOBAL
 import pygame
@@ -12,6 +18,8 @@ DISPLAY_WIDTH = 800
 DISPLAY_HEIGHT = 600
 
 pieceNames = ('I', 'O', 'T', 'S', 'Z', 'J', 'L')
+
+CUSTOM_UPDATE_SCORE = 0
 
 STARTING_LEVEL = 0 #Change this to start a new game at a higher level
 
@@ -408,14 +416,23 @@ class MainBoard:
 				if self.piece.blocks[i].currentPos.row >= 0 and self.piece.blocks[i].currentPos.col >= 0:
 					self.blockMat[self.piece.blocks[i].currentPos.row][self.piece.blocks[i].currentPos.col] = self.piece.type
 	
+	def setScore(self,score,level,baseLinePoints,clearedLinesNum,piece):
+		return self.score + (self.level+1)*baseLinePoints[clearedLinesNum] + self.piece.dropScore
+
 	def updateScores(self):
+		if CUSTOM_UPDATE_SCORE:
+			from updateScore import customUpdateScore
 		
 		clearedLinesNum = 0
 		for i in range(0,4):
 			if self.clearedLines[i] > -1:
 				clearedLinesNum = clearedLinesNum + 1
+
+		if CUSTOM_UPDATE_SCORE:
+			self.score = customUpdateScore(self.score, self.level, baseLinePoints, clearedLinesNum, self.piece)
+		else:
+			self.score = self.setScore(self.score, self.level, baseLinePoints, clearedLinesNum, self.piece)
 				
-		self.score = self.score + (self.level+1)*baseLinePoints[clearedLinesNum] + self.piece.dropScore
 		if self.score > 999999:
 			self.score = 999999
 		self.lines = self.lines + clearedLinesNum
@@ -819,6 +836,11 @@ class Game:
 		global DISPLAY_NEXT_PIECE
 		DISPLAY_NEXT_PIECE = check
 		print(f'Game --> NEXTQ set to {DISPLAY_NEXT_PIECE}')
+	
+	def useCustomScoreAlgo(self, use):
+		global CUSTOM_UPDATE_SCORE
+		CUSTOM_UPDATE_SCORE = use
+		print(f'Game --> CUSTOMSCOREALGO set to {CUSTOM_UPDATE_SCORE}')
 
 	# Main program
 	def begin(self):
