@@ -18,10 +18,8 @@ class GameTranslator:
 
     def nextq(self, check):
         if check[1] == 'ON':
-            print("nextq is ",check)
             self.game.setDisplayPiece(True) 
         else:
-            print("nextq is ",check)
             self.game.setDisplayPiece(False)
         
     def startGame(self):
