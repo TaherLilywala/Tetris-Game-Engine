@@ -10,7 +10,7 @@ from translator import GameTranslator
 import sys
 
 if __name__ == '__main__':       
-    print('Tetris > Hi, I am the Tetri-game Engine.')
+    print('Tetris > Hi, I am the Tetris-game Engine.')
     lexer = GameLexer()
     parser = GameParser()
     game = Game()
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     while True:
         try:
             print('Tetris > Please type a command.')
-            print('------ > ', end = "")
+            print('User --> ', end = "")
             text = input()
         except EOFError:
             print("")
